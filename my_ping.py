@@ -10,6 +10,7 @@ import select
 
 ICMP_ECHO_REQUEST = 8
 ICMP_ECHO_REPLY = 0
+DEFAULT_DATA_SIZE = 56   # 56 data bytes (64 including ICMP header)
 
 
 def checksum(data):
@@ -23,9 +24,9 @@ def checksum(data):
     return ~s & 0xffff
 
 
-def create_packet(pid, seq):
+def create_packet(pid, seq, size):
     header = struct.pack("!BBHHH", ICMP_ECHO_REQUEST, 0, 0, pid, seq)
-    data = b'abcdefghijklmnopqrstuvwabcdefghi'
+    data = bytes(size)  # ✅ dynamic packet size
     chksum = checksum(header + data)
     header = struct.pack("!BBHHH", ICMP_ECHO_REQUEST, 0, chksum, pid, seq)
     return header + data
@@ -45,14 +46,14 @@ def receive_ping(sock, pid):
             return (recv_time - start) * 1000
 
 
-def ping(dest, count, interval):
+def ping(dest, count, interval, size):
     try:
         dest_ip = socket.gethostbyname(dest)
     except socket.gaierror:
         print("Cannot resolve host")
         sys.exit(1)
 
-    print(f"PING {dest} ({dest_ip})")
+    print(f"PING {dest} ({dest_ip}) {size} bytes of data.")
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
     pid = os.getpid() & 0xFFFF
@@ -61,7 +62,7 @@ def ping(dest, count, interval):
     sent = received = 0
 
     while count is None or seq <= count:
-        packet = create_packet(pid, seq)
+        packet = create_packet(pid, seq, size)
         sock.sendto(packet, (dest_ip, 1))
         sent += 1
 
@@ -71,10 +72,11 @@ def ping(dest, count, interval):
             print(f"Request timeout for icmp_seq {seq}")
         else:
             received += 1
-            print(f"Reply from {dest_ip}: icmp_seq={seq} time={rtt:.2f} ms")
+            print(f"{size + 8} bytes from {dest_ip}: "
+                  f"icmp_seq={seq} time={rtt:.2f} ms")
 
         seq += 1
-        time.sleep(interval)   # ✅ uses -i value
+        time.sleep(interval)
 
     print(f"\n{sent} packets transmitted, {received} received")
 
@@ -84,10 +86,12 @@ def main():
     parser.add_argument("destination")
     parser.add_argument("-c", type=int, help="Number of packets")
     parser.add_argument("-i", type=float, default=1,
-                        help="Wait seconds between sending each packet (default=1)")
+                        help="Wait seconds between packets (default=1)")
+    parser.add_argument("-s", type=int, default=DEFAULT_DATA_SIZE,
+                        help="Number of data bytes to send (default=56)")
     args = parser.parse_args()
 
-    ping(args.destination, args.c, args.i)
+    ping(args.destination, args.c, args.i, args.s)
 
 
 if __name__ == "__main__":
