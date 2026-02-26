@@ -10,7 +10,7 @@ import select
 
 ICMP_ECHO_REQUEST = 8
 ICMP_ECHO_REPLY = 0
-DEFAULT_DATA_SIZE = 56   # 56 data bytes (64 including ICMP header)
+DEFAULT_DATA_SIZE = 56
 
 
 def checksum(data):
@@ -26,7 +26,7 @@ def checksum(data):
 
 def create_packet(pid, seq, size):
     header = struct.pack("!BBHHH", ICMP_ECHO_REQUEST, 0, 0, pid, seq)
-    data = bytes(size)  # ✅ dynamic packet size
+    data = bytes(size)
     chksum = checksum(header + data)
     header = struct.pack("!BBHHH", ICMP_ECHO_REQUEST, 0, chksum, pid, seq)
     return header + data
@@ -46,7 +46,7 @@ def receive_ping(sock, pid):
             return (recv_time - start) * 1000
 
 
-def ping(dest, count, interval, size):
+def ping(dest, count, interval, size, timeout):
     try:
         dest_ip = socket.gethostbyname(dest)
     except socket.gaierror:
@@ -60,8 +60,18 @@ def ping(dest, count, interval, size):
 
     seq = 1
     sent = received = 0
+    start_time = time.time()  # ✅ track overall runtime
 
-    while count is None or seq <= count:
+    while True:
+
+        # ✅ Stop if count reached
+        if count is not None and seq > count:
+            break
+
+        # ✅ Stop if total timeout exceeded
+        if timeout is not None and (time.time() - start_time) >= timeout:
+            break
+
         packet = create_packet(pid, seq, size)
         sock.sendto(packet, (dest_ip, 1))
         sent += 1
@@ -78,7 +88,8 @@ def ping(dest, count, interval, size):
         seq += 1
         time.sleep(interval)
 
-    print(f"\n{sent} packets transmitted, {received} received")
+    print(f"\n--- {dest} ping statistics ---")
+    print(f"{sent} packets transmitted, {received} received")
 
 
 def main():
@@ -89,9 +100,12 @@ def main():
                         help="Wait seconds between packets (default=1)")
     parser.add_argument("-s", type=int, default=DEFAULT_DATA_SIZE,
                         help="Number of data bytes to send (default=56)")
+    parser.add_argument("-t", type=int,
+                        help="Total timeout in seconds before exiting")
+
     args = parser.parse_args()
 
-    ping(args.destination, args.c, args.i, args.s)
+    ping(args.destination, args.c, args.i, args.s, args.t)
 
 
 if __name__ == "__main__":
