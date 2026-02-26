@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
 my_traceroute.py
-
-
+Author: Elan A. Cote
 Custom implementation of traceroute using UDP probes.
 """
 
@@ -11,9 +10,6 @@ import argparse
 import socket
 import struct
 import time
-
-
-
 
 MAX_TTL = 30
 PORT = 33434

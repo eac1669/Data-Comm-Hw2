@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
 my_ping.py
-
-
+Author: Elan A. Cote
 A custom implementation of the Linux ping utility using raw sockets.
 """
 
