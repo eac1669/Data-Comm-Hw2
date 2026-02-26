@@ -25,7 +25,7 @@ def checksum(data):
 
 def create_packet(pid, seq):
     header = struct.pack("!BBHHH", ICMP_ECHO_REQUEST, 0, 0, pid, seq)
-    data = b'abcdefghijklmnopqrstuvwabcdefghi'  # 32 bytes
+    data = b'abcdefghijklmnopqrstuvwabcdefghi'
     chksum = checksum(header + data)
     header = struct.pack("!BBHHH", ICMP_ECHO_REQUEST, 0, chksum, pid, seq)
     return header + data
@@ -45,7 +45,7 @@ def receive_ping(sock, pid):
             return (recv_time - start) * 1000
 
 
-def ping(dest, count):
+def ping(dest, count, interval):
     try:
         dest_ip = socket.gethostbyname(dest)
     except socket.gaierror:
@@ -74,7 +74,7 @@ def ping(dest, count):
             print(f"Reply from {dest_ip}: icmp_seq={seq} time={rtt:.2f} ms")
 
         seq += 1
-        time.sleep(1)
+        time.sleep(interval)   # ✅ uses -i value
 
     print(f"\n{sent} packets transmitted, {received} received")
 
@@ -83,9 +83,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("destination")
     parser.add_argument("-c", type=int, help="Number of packets")
+    parser.add_argument("-i", type=float, default=1,
+                        help="Wait seconds between sending each packet (default=1)")
     args = parser.parse_args()
 
-    ping(args.destination, args.c)
+    ping(args.destination, args.c, args.i)
 
 
 if __name__ == "__main__":
