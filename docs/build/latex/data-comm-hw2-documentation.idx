@@ -1,0 +1,11 @@
+\indexentry{module@\spxentry{module}!my\_ping@\spxentry{my\_ping}|hyperpage}{1}
+\indexentry{my\_ping@\spxentry{my\_ping}!module@\spxentry{module}|hyperpage}{1}
+\indexentry{checksum() (in module my\_ping)@\spxentry{checksum()}\spxextra{in module my\_ping}|hyperpage}{1}
+\indexentry{create\_packet() (in module my\_ping)@\spxentry{create\_packet()}\spxextra{in module my\_ping}|hyperpage}{1}
+\indexentry{main() (in module my\_ping)@\spxentry{main()}\spxextra{in module my\_ping}|hyperpage}{1}
+\indexentry{ping() (in module my\_ping)@\spxentry{ping()}\spxextra{in module my\_ping}|hyperpage}{1}
+\indexentry{receive\_ping() (in module my\_ping)@\spxentry{receive\_ping()}\spxextra{in module my\_ping}|hyperpage}{1}
+\indexentry{module@\spxentry{module}!my\_traceroute@\spxentry{my\_traceroute}|hyperpage}{1}
+\indexentry{my\_traceroute@\spxentry{my\_traceroute}!module@\spxentry{module}|hyperpage}{1}
+\indexentry{main() (in module my\_traceroute)@\spxentry{main()}\spxextra{in module my\_traceroute}|hyperpage}{1}
+\indexentry{traceroute() (in module my\_traceroute)@\spxentry{traceroute()}\spxextra{in module my\_traceroute}|hyperpage}{1}
